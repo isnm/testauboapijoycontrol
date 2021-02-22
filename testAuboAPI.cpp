@@ -1,3 +1,34 @@
+/*
+ * Software License Agreement (BSD License)
+ *
+ * Copyright (c) 2017-2018, AUBO Robotics
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ *       * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *       * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *       * Neither the name of the Southwest Research Institute, nor the names
+ *       of its contributors may be used to endorse or promote products derived
+ *       from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
+
 
 
 #include "aubo_driver/aubo_driver.h"
@@ -17,11 +48,15 @@
 #include <fstream>
 
 using namespace aubo_driver;
+#define MAX_JOINT_ACC 100.0/180.0*M_PI  //unit rad/s^2
+#define MAX_JOINT_VEL 20.0/180.0*M_PI   //unit rad/s
+#define MAX_END_ACC    4                // unit m/s^2
+#define MAX_END_VEL    0.02                // unit m/s
 
 
 double currentjoint[6] = {0.0,0.0,0.0,0.0,0.0,0.0}; //degree
 double targetjoint[6] = {0.0,0.0,0.0,0.0,0.0,0.0}; //degree
-
+double zeropos[6] = {0.0,0.0,0.0,0.0,0.0,0.0}; //degree
  
 
 int state = 0;
@@ -115,6 +150,12 @@ void joyCallback(const sensor_msgs::Joy msg){
 
         state = 12;
     }
+    else if (msg.buttons[0] == 1 && state ==0){
+        state = 13;
+    }
+    else{
+        state = 0;
+    }
 
 }
 
@@ -154,125 +195,116 @@ int main(int argc, char **argv)
 
   ros::Rate loop_rate(10);
   while (ros::ok()){
-	state = 0;
+        for(int i=0; i<6; i++) {
+          targetjoint[i] = currentjoint[i];         
+            } 
       if(ret && state == 1)
       {
         ROS_INFO("state 1");
-        for(int i=0; i<6; i++) {
-          targetjoint[i] = currentjoint[i];         
-            }  
-        targetjoint[0] = currentjoint[0]-0.1;	
+
+ 
+        targetjoint[0] = currentjoint[0]-1.0;	
 
         robot_driver.robot_send_service_.robotServiceJointMove(targetjoint, true);
+        
       }
       else if(ret && state == 2){
         ROS_INFO("state 2");
-           for(int i=0; i<6; i++) {
-            targetjoint[i] = currentjoint[i];         
-            } 
-        targetjoint[0] = currentjoint[0]+0.1;
+
+        targetjoint[0] = currentjoint[0]+1.0;
         robot_driver.robot_send_service_.robotServiceJointMove(targetjoint, true);
 
       }
       else if(ret && state == 3)
       {
         ROS_INFO("state 3");
-           for(int i=0; i<6; i++) {
-        targetjoint[i] = currentjoint[i];         
-    	} 
-        targetjoint[1] = currentjoint[1]-0.1;
+
+        targetjoint[1] = currentjoint[1]-1.0;
         robot_driver.robot_send_service_.robotServiceJointMove(targetjoint, true);
+
 
       }
       else if(ret && state == 4)
       {
         ROS_INFO("state 4");
-            for(int i=0; i<6; i++) {
-                targetjoint[i] = currentjoint[i];
-            }
-        targetjoint[1] = currentjoint[1]+0.1;
+
+        targetjoint[1] = currentjoint[1]+1.0;
         robot_driver.robot_send_service_.robotServiceJointMove(targetjoint, true);
 
       }
       else if(ret && state == 5)
       {
         ROS_INFO("state 5");
-            for(int i=0; i<6; i++) {
-                targetjoint[i] = currentjoint[i];
-            }
-        targetjoint[2] = currentjoint[2]+0.1;
+
+        targetjoint[2] = currentjoint[2]+1.0;
         robot_driver.robot_send_service_.robotServiceJointMove(targetjoint, true);
 
       }
       else if(ret && state == 6)
       {
         ROS_INFO("state 6");
-            for(int i=0; i<6; i++) {
-                targetjoint[i] = currentjoint[i];
-            }
-        targetjoint[2] = currentjoint[2]-0.1;
+
+        targetjoint[2] = currentjoint[2]-1.0;
         robot_driver.robot_send_service_.robotServiceJointMove(targetjoint, true);
 
       }
       else if(ret && state == 7)
       {
         ROS_INFO("state 7");
-            for(int i=0; i<6; i++) {
-                targetjoint[i] = currentjoint[i];
-            }
-        targetjoint[4] = currentjoint[4]-0.1;
+
+        targetjoint[4] = currentjoint[4]-1.0;
         robot_driver.robot_send_service_.robotServiceJointMove(targetjoint, true);
 
       }
       else if(ret && state == 8)
       {
         ROS_INFO("state 8");
-            for(int i=0; i<6; i++) {
-                targetjoint[i] = currentjoint[i];
-            }
-        targetjoint[4] = currentjoint[4]+0.1;
+
+        targetjoint[4] = currentjoint[4]+1.0;
         robot_driver.robot_send_service_.robotServiceJointMove(targetjoint, true);
 
       }
       else if(ret && state == 9)
       {
         ROS_INFO("state 9");
-            for(int i=0; i<6; i++) {
-                targetjoint[i] = currentjoint[i];
-            }
-        targetjoint[3] = currentjoint[3]-0.1;
+
+        targetjoint[3] = currentjoint[3]-1.0;
         robot_driver.robot_send_service_.robotServiceJointMove(targetjoint, true);
 
       }
       else if(ret && state == 10)
       {
         ROS_INFO("state 10");
-            for(int i=0; i<6; i++) {
-                targetjoint[i] = currentjoint[i];
-            }
-        targetjoint[3] = currentjoint[3]+0.1;
+
+        targetjoint[3] = currentjoint[3]+1.0;
         robot_driver.robot_send_service_.robotServiceJointMove(targetjoint, true);
 
       }
       else if(ret && state == 11)
       {
         ROS_INFO("state 11");
-            for(int i=0; i<6; i++) {
-                targetjoint[i] = currentjoint[i];
-            }
-        targetjoint[5] = currentjoint[5]+0.1;
+
+        targetjoint[5] = currentjoint[5]+1.0;
         robot_driver.robot_send_service_.robotServiceJointMove(targetjoint, true);
 
       }
       else if(ret && state == 12)
       {
+
         ROS_INFO("state 12");
-            for(int i=0; i<6; i++) {
-                targetjoint[i] = currentjoint[i];
-            }
-        targetjoint[5] = currentjoint[5]-0.1;
+
+        targetjoint[5] = currentjoint[5]-1.0;
         robot_driver.robot_send_service_.robotServiceJointMove(targetjoint, true);
 
+      }
+      else if(ret && state == 13)
+      {
+        ROS_INFO("State 13");
+        robot_driver.robot_send_service_.robotServiceJointMove(zeropos, true);
+      }
+      else
+      {
+        robot_driver.robot_send_service_.robotMoveFastStop();
       }
 
    
