@@ -60,6 +60,8 @@ double zeropos[6] = {0.0,0.0,0.0,0.0,0.0,0.0}; //degree
  
 
 int state = 0;
+int prev_state = state;
+bool bContinue;
 /**
 bool forwardKinematic(std::vector<double> jointState, std::vector<double> &xyzrpy){
 	if()
@@ -174,6 +176,7 @@ int main(int argc, char **argv)
 
   AuboDriver robot_driver;
   bool ret = robot_driver.connectToRobotController();
+  
 
   ros::ServiceClient FK_client = n.serviceClient<aubo_msgs::GetFK>("/aubo_driver/get_fk");  //client subscribe service FK` (Forward Kinematic)
   ros::ServiceClient IK_client = n.serviceClient<aubo_msgs::GetIK>("/aubo_driver/gest_ik");
@@ -195,6 +198,21 @@ int main(int argc, char **argv)
 
   ros::Rate loop_rate(10);
   while (ros::ok()){
+      if(prev_state ==0 && state!=0){
+            ROS_INFO("prev_state == 0");
+            bContinue = true;
+            prev_state=state;
+      }
+
+      if(bContinue){
+            ROS_INFO("%d",robot_driver.robot_send_service_.rootServiceRobotMoveControl(aubo_robot_namespace::RobotMoveControlCommand::RobotMoveContinue));
+            robot_driver.robot_send_service_.rootServiceRobotMoveControl(aubo_robot_namespace::RobotMoveControlCommand::RobotMoveContinue); //Continue = 2
+
+      
+      }
+
+
+      
         for(int i=0; i<6; i++) {
           targetjoint[i] = currentjoint[i];         
             } 
@@ -300,13 +318,14 @@ int main(int argc, char **argv)
       else if(ret && state == 13)
       {
         ROS_INFO("State 13");
-        robot_driver.robot_send_service_.robotServiceJointMove(zeropos, true);
+        robot_driver.robot_send_service_.rootServiceRobotMoveControl(aubo_robot_namespace::RobotMoveControlCommand::RobotMoveStop); //RobotMoveStop =0
       }
-      else
+ /**     else
       {
-        robot_driver.robot_send_service_.robotMoveFastStop();
+        ROS_INFO("MOVE PAUSE");
+        robot_driver.robot_send_service_.rootServiceRobotMoveControl(aubo_robot_namespace::RobotMoveControlCommand::RobotMovePause);
       }
-
+**/
    
     ros::spinOnce();
     loop_rate.sleep();
